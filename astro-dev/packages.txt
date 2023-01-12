@@ -1,0 +1,4 @@
+postgresql-client
+zstd
+ccrypt
+backblaze-b2
