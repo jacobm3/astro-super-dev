@@ -19,24 +19,7 @@ http {
 
     server {
         listen 80;
-        location / {
-            proxy_pass         http://airflow;
-            proxy_redirect     http://localhost:8000/ http://$host:$server_port/;
-            proxy_redirect     http://localhost/ http://$host:$server_port/;
-            proxy_redirect     http://$proxy_host/home http://$host:$server_port/home;
-            proxy_http_version 1.1;
-            proxy_cache_bypass $http_upgrade;
-            proxy_set_header   Upgrade $http_upgrade;
-            proxy_set_header   Connection keep-alive;
-            proxy_set_header   Host $host;
-            proxy_set_header   X-Real-IP $remote_addr;
-            proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header   X-Forwarded-Proto $scheme;
-            proxy_set_header   X-Forwarded-Host $server_name;
-            proxy_buffer_size           128k;
-            proxy_buffers               4 256k;
-            proxy_busy_buffers_size     256k;
-        }
+        return 301 https://$host/$request_uri;
     }
 
     server {

@@ -7,8 +7,23 @@ if [ -z ${ASTRODIR} ]; then
   exit 1
 fi
 
-[ -f nginx/fullchain.pem ] || (echo '#'; echo "# WARNING: TLS proxy won't work without cert chain at 'nginx/fullchain.pem'"; echo '#')
-[ -f nginx/privkey.pem ] ||   (echo '#'; echo "# WARNING: TLS proxy won't work without private key at 'nginx/privkey.pem'"; echo '#')
+if [ ! -d $ASTRODIR ]
+then
+  mkdir -p $ASTRODIR
+fi
+
+# Put your TLS cert and key here if you get one from somewhere else.
+TLSCERT=nginx/fullchain.pem
+TLSKEY=nginx/privkey.pem
+if [ ! -f $TLSCERT ] || [ ! -f $TLSKEY ] 
+then
+  echo "# WARN: TLS cert or key not found. Generating at $TLSCERT $TLSKEY"
+  openssl req -x509 -nodes -days 730 \
+    -newkey rsa:2048 -keyout $TLSKEY \
+    -out $TLSCERT \
+    -config tls/req.conf \
+    -extensions 'v3_req'
+fi
 
 mkdir -p log
 
@@ -45,7 +60,7 @@ set -e
 echo Starting initial Astro dev environment
 # mkdir -p $ASTRODIR
 cd $ASTRODIR
-# astro dev init
+astro dev init
 
 # echo
 # echo '### Copying Airflow demo content.'
@@ -179,6 +194,7 @@ docker container update --memory $scheduler_ram_k --memory-swap $scheduler_swap_
 wait
 
 echo
+echo "Airflow:          http://${NODENAME}.${DOMAIN}/"
 echo "Airflow:          http://${NODENAME}.${DOMAIN}:8080/"
 echo "Airflow TLS:      https://${NODENAME}.${DOMAIN}/"
 echo "Grafana:          http://${NODENAME}.${DOMAIN}:3000/"
