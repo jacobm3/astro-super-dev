@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 . config.env
 
@@ -47,16 +47,11 @@ echo 'Astro performance tuning.'
 # Determine good scheduler memory limits. Too many concurrent tasks will cause swapping without this.
 scheduler_ram_k=$(printf "%.0fk\n" $(echo "$(head -n1 /proc/meminfo | awk '{print $2}')  * $SCHEDULER_MEM_PERCENT " | bc))
 scheduler_swap_k=$(printf "%ik" $(head -n1 /proc/meminfo | awk '{print $2}'))
+docker container update --memory $scheduler_ram_k --memory-swap $scheduler_swap_k  $(docker ps | grep scheduler-1 | awk '{print $1}')
 
 # Raise postgres connection limits
-until (docker ps | grep $ASTRODIR | grep postgres >/dev/null); do sleep 0.5; done
 pgcontainer=$(docker ps | grep $ASTRODIR | grep postgres | cut -f1 -d' ')
-until (docker exec -it $pgcontainer ls >/dev/null); do sleep 0.5; done
 docker exec -it $pgcontainer sed -i 's/max_connections = .*/max_connections = 1000/' /var/lib/postgresql/data/postgresql.conf
-
-# Apply scheduler memory limits
-until (docker ps | grep $ASTRODIR | grep scheduler >/dev/null); do sleep 0.5; done
-docker container update --memory $scheduler_ram_k --memory-swap $scheduler_swap_k  $(docker ps | grep scheduler-1 | awk '{print $1}')
 
 echo
 echo '#################################################################################'
@@ -70,20 +65,18 @@ sed "s/AIRFLOW-WEBSERVER/$webserver/" < nginx/nginx.conf.template > nginx/nginx.
 docker run -d \
   -p 80:80 \
   -p 443:443 \
-  -p 3443:3443 \
-  -p 8201:8201 \
   --restart unless-stopped \
   --network $network \
   --name nginx \
   -v $PWD/nginx:/etc/nginx/ \
   nginx 
 
-echo
-echo "Airflow:          http://${NODENAME}.${DOMAIN}/"
-echo "Airflow:          http://${NODENAME}.${DOMAIN}:8080/"
-echo "Airflow TLS:      https://${NODENAME}.${DOMAIN}/"
-echo "Grafana:          http://${NODENAME}.${DOMAIN}:3000/"
-echo "Grafana TLS:      https://${NODENAME}.${DOMAIN}:3443/"
-echo "Vault:            http://${NODENAME}.${DOMAIN}:8200/"
-echo "Vault TLS:        https://${NODENAME}.${DOMAIN}:8201/"
-echo
+# echo
+# echo "Airflow:          http://${NODENAME}.${DOMAIN}/"
+# echo "Airflow:          http://${NODENAME}.${DOMAIN}:8080/"
+# echo "Airflow TLS:      https://${NODENAME}.${DOMAIN}/"
+# echo "Grafana:          http://${NODENAME}.${DOMAIN}:3000/"
+# echo "Grafana TLS:      https://${NODENAME}.${DOMAIN}:3443/"
+# echo "Vault:            http://${NODENAME}.${DOMAIN}:8200/"
+# echo "Vault TLS:        https://${NODENAME}.${DOMAIN}:8201/"
+# echo
