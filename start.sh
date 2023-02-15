@@ -1,6 +1,6 @@
 #!/bin/bash
 
-docker start nginx statsd prom grafana vault
+docker start nginx
 
 cd astro-dev
 astro dev start

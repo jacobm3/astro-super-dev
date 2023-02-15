@@ -10,7 +10,7 @@ fi
 set -e
 
 # remove existing containers
-PATTERN="${ASTRODIR}_|/airflow:latest | prom/prometheus | grafana/grafana-oss | quay.io/astronomer/ap-statsd-exporter | nginx | vault "
+PATTERN="${ASTRODIR}_|/airflow:latest | nginx "
 echo Removing any Astro containers matching "$PATTERN"
 docker ps -a | grep -v CONTAINER | egrep "$PATTERN" >/dev/null && \
 docker ps -a | grep -v CONTAINER | egrep "$PATTERN" | awk '{print $1}' | xargs docker rm -f -v
@@ -26,4 +26,4 @@ docker volume ls | grep -v CONTAINER | egrep "$PATTERN" | awk '{print $2}' | xar
 
 rm -fr $ASTRODIR
 
-./parallel-start-astro-dev-stack.sh
+./start-astro-dev-stack.sh
