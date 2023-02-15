@@ -51,7 +51,7 @@ docker container update --memory $scheduler_ram_k --memory-swap $scheduler_swap_
 
 # Raise postgres connection limits
 pgcontainer=$(docker ps | grep $ASTRODIR | grep postgres | cut -f1 -d' ')
-docker exec -it $pgcontainer sed -i 's/max_connections = .*/max_connections = 1000/' /var/lib/postgresql/data/postgresql.conf
+docker exec $pgcontainer sed -i 's/max_connections = .*/max_connections = 1000/' /var/lib/postgresql/data/postgresql.conf
 
 echo
 echo '#################################################################################'
