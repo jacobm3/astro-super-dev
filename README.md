@@ -25,7 +25,7 @@ Create an /etc/hosts (c:/windows/system32/drivers/etc/hosts) entry for localhost
 ```
 This will allow your browser to trust the certificate running on Docker's localhost containers.
 
-Add your certificate and private key in PEM format to:
+If you don't provide a custom certificate, a self-signed cert will be generated for you. If you do want to use a custom certificate, add it to:
 
 ```
 nginx/fullchain.pem
@@ -33,6 +33,8 @@ nginx/privkey.pem
 ```
 
 Edit the URLs at the end of `repave.sh` to match the DNS name you setup to access your local containers, which should match your certificate subject.
+
+Edit `content/sample.env` and copy to astro-dev/.env.
 
 ## Start
 
